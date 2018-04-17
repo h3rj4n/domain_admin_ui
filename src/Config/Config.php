@@ -69,6 +69,19 @@ class Config extends CoreConfig {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+    $domainConfigName = $this->getDomainConfigName();
+
+    // Overwrite the name with the domain specific name.
+    $this->name = $domainConfigName;
+
+    return parent::delete();
+  }
+
+
+  /**
    * Get the domain config name.
    */
   protected function getDomainConfigName() {

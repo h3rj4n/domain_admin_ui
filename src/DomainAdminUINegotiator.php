@@ -61,7 +61,7 @@ class DomainAdminUINegotiator extends DomainNegotiator {
    */
   public function getSelectedDomain() {
     $selected_domain_id = $this->getSelectedDomainId();
-    if ($selected_domain_id && $selected_domain = $this->domainLoader->load($selected_domain_id)) {
+    if ($selected_domain_id && $selected_domain = $this->domainStorage->load($selected_domain_id)) {
       return $selected_domain;
     }
   }
@@ -80,7 +80,7 @@ class DomainAdminUINegotiator extends DomainNegotiator {
    * @param string $domain_id
    */
   public function setSelectedDomain($domain_id) {
-    if ($domain = $this->domainLoader->load($domain_id)) {
+    if ($domain = $this->domainStorage->load($domain_id)) {
       // Set session for subsequent request.
       $_SESSION['domain_admin_ui']['selected_domain'] = $domain_id;
       // Switch active domain now so that selected domain configuration can be loaded immediatly.
