@@ -32,8 +32,15 @@ class ConfigFactory extends CoreConfigFactory {
    * Helper to check if config is allowed to be saved for domain.
    *
    * @param string $name
+   *
+   * @return bool
    */
   protected function isAllowedDomainConfig($name) {
+    // Prevent doing anything during installation.
+    if (defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'install') {
+      return FALSE;
+    }
+
     // Get default allowed config and allow other modules to alter.
     $allowed = $this->allowedDomainConfig;
     \Drupal::moduleHandler()->alter('domain_config_allowed', $allowed);

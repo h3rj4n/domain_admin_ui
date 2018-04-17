@@ -86,11 +86,12 @@ class Config extends CoreConfig {
    */
   protected function getDomainConfigName() {
     // Return selected config name.
-    $domain = $this->domainNegotiator->getActiveDomain(FALSE);
-    $overrider = $this->domainNegotiator->getDomainConfigOverrider();
-    $configNames = $overrider->getDomainConfigName($this->name, $domain);
-    $language_id = $this->domainNegotiator->getSelectedLanguageId();
-    $domain_id = $this->domainNegotiator->getSelectedDomainId();
+    if ($domain = $this->domainNegotiator->getActiveDomain(FALSE)) {
+      $overrider = $this->domainNegotiator->getDomainConfigOverrider();
+      $configNames = $overrider->getDomainConfigName($this->name, $domain);
+      $language_id = $this->domainNegotiator->getSelectedLanguageId();
+      $domain_id = $this->domainNegotiator->getSelectedDomainId();
+    }
 
     // Use default config name if domain hasn't been selected.
     if (empty($domain_id)) {
@@ -107,7 +108,7 @@ class Config extends CoreConfig {
   }
 
   /**
-   * Check config differences recusively.
+   * Check config differences recursively.
    *
    * @param unknown $aArray1
    * @param unknown $aArray2
