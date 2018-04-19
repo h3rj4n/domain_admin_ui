@@ -9,6 +9,7 @@ use Drupal\domain_config\DomainConfigOverrider;
  * {@inheritdoc}
  */
 class DomainAdminUINegotiator extends DomainNegotiator {
+
   /**
    * @var DomainConfigOverrider
    */
@@ -71,7 +72,9 @@ class DomainAdminUINegotiator extends DomainNegotiator {
    */
   public function getSelectedDomainId() {
     // Return selected domain ID on admin paths only.
-    return !empty($_SESSION['domain_admin_ui']['selected_domain']) ? $_SESSION['domain_admin_ui']['selected_domain'] : '';
+    return !empty($_SESSION['domain_admin_ui']['selected_domain'])
+      ? $_SESSION['domain_admin_ui']['selected_domain']
+      : '';
   }
 
   /**

@@ -44,13 +44,21 @@ class Config extends CoreConfig {
         parent::save($has_trusted_data);
       }
 
-      // Switch to use domain config name and save.
-      $this->name = $domainConfigName;
+      // When the domain config name is the same as the original name it should
+      // be handled as a normal config file. No domain specific actions are required.
+      if ($domainConfigName === $originalName) {
+        parent::save($has_trusted_data);
+      }
+      else {
+        // Switch to use domain config name and save.
+        $this->name = $domainConfigName;
 
-      // Only save override changes.
-      $this->data = $this->arrayRecursiveDiff($this->data, $this->originalData);
-      $this->originalData = [];
-      parent::save($has_trusted_data);
+        // Only save override changes.
+        $this->data = $this->arrayRecursiveDiff($this->data, $this->originalData);
+        $this->originalData = [];
+
+        parent::save($has_trusted_data);
+      }
     }
     catch (\Exception $e) {
       // Reset back to original config name if save fails and re-throw.

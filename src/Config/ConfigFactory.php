@@ -9,6 +9,7 @@ use Drupal\domain\DomainNegotiatorInterface;
  * Overrides Drupal\Core\Config\ConfigFactory in order to use our own Config class.
  */
 class ConfigFactory extends CoreConfigFactory {
+
   /**
    * List of config that can be saved for a specific domain.
    * Use * for wildcards.
