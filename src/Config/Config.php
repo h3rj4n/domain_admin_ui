@@ -9,6 +9,7 @@ use Drupal\domain\DomainNegotiatorInterface;
  * Extend core Config class to save domain specific configuration.
  */
 class Config extends CoreConfig {
+
   /**
    * The Domain negotiator.
    *
@@ -57,6 +58,19 @@ class Config extends CoreConfig {
         $this->data = $this->arrayRecursiveDiff($this->data, $this->originalData);
         $this->originalData = [];
 
+        // Problem: The input data contains the data from both:
+        //   - theme.settings
+        //   - domain.config.domain.theme.settings
+        // The diff contains only the data that's different from the original
+        // domain specific config. The data should contain of the diff + the
+        // domain specific config.
+        // @todo Add tests for this!
+        // @todo Specific settings can be set to the origin (or parent) value. These settings should not be saved in the domain specific config file! (but removed)
+        // @todo Use dependency injection!
+        /** @var \Drupal\Core\Config\ImmutableConfig $domainOriginalData */
+        $domainOriginalData = \Drupal::getContainer()->get('config.factory')->get($domainConfigName);
+        $this->data = array_merge_recursive($domainOriginalData->getRawData(), $this->data);
+
         parent::save($has_trusted_data);
       }
     }
@@ -80,6 +94,9 @@ class Config extends CoreConfig {
    * {@inheritdoc}
    */
   public function delete() {
+    // Delete domain specific config. For example: Color module deletes config before recreating.
+    // @todo Can this cause problems?
+
     $domainConfigName = $this->getDomainConfigName();
 
     // Overwrite the name with the domain specific name.
