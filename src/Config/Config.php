@@ -71,7 +71,11 @@ class Config extends CoreConfig {
         $domainOriginalData = \Drupal::getContainer()->get('config.factory')->get($domainConfigName);
         $this->data = array_merge_recursive($domainOriginalData->getRawData(), $this->data);
 
-        parent::save($has_trusted_data);
+        // Don't do anything when no changes are made. Prevent empty
+        // domain.settings files.
+        if (!empty($this->data)) {
+          parent::save($has_trusted_data);
+        }
       }
     }
     catch (\Exception $e) {
