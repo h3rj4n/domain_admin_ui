@@ -61,8 +61,12 @@ class DomainAdminUIConfigOverrider extends DomainConfigOverrider {
     // expect only the core config. Not domain specific config.
 
     // @todo Disable for non-admin (I removed the domain switcher for the front-end). This should be configurable!
-    $route = \Drupal::routeMatch()->getRouteObject();
-    $is_admin = \Drupal::service('router.admin_context')->isAdminRoute($route);
+
+    /** @var \Drupal\Core\Routing\Router $router */
+    $router = \Drupal::service('router.no_access_checks');
+    $routeArray = $router->matchRequest(\Drupal::request());
+
+    $is_admin = \Drupal::service('router.admin_context')->isAdminRoute($routeArray['_route_object']);
 
     if (!empty($this->domainNegotiator)
       && !$this->domainNegotiator->getSelectedDomainId()
