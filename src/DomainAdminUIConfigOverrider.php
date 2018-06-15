@@ -51,19 +51,26 @@ class DomainAdminUIConfigOverrider extends DomainConfigOverrider {
   /**
    * {@inheritdoc}
    */
-  public function loadOverrides($names) {
-    // This function is overridden because the 'parent::loadOverrides' cannot be
-    // manipulated any other way. It's uses the domainNegotiator with a hard
-    // refresh (see DomainConfigOverride::initiateContext) which results in the
-    // current domain being loaded. When the current domain cannot be found it
-    // will fallback to the default domain. Either way, the config will be
-    // overwritten by a domain. To prevent this, just return an empty array.
-    // This way the selected domain will be leading for the loaded configuration.
-    if (empty($this->domainNegotiator) || !$this->domainNegotiator->getSelectedDomainId()) {
-      return [];
-    }
+  protected function initiateContext() {
+    parent::initiateContext();
 
-    return parent::loadOverrides($names);
+    // Remove the domain when special conditions are met so the base config file
+    // will be loaded without any of the domain overrides. Problem was that this
+    // parent function load the domain with the reset bool. This resulted in an
+    // always loaded domain object. When the 'all domains' is selected you
+    // expect only the core config. Not domain specific config.
+
+    // @todo Disable for non-admin (I removed the domain switcher for the front-end). This should be configurable!
+    $route = \Drupal::routeMatch()->getRouteObject();
+    $is_admin = \Drupal::service('router.admin_context')->isAdminRoute($route);
+
+    if (!empty($this->domainNegotiator)
+      && !$this->domainNegotiator->getSelectedDomainId()
+      && \Drupal::currentUser()->hasPermission('use domain admin switcher')
+      && $is_admin
+    ) {
+      $this->domain = NULL;
+    }
   }
 
 }
