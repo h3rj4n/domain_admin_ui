@@ -69,7 +69,7 @@ class Config extends CoreConfig {
         // @todo Use dependency injection!
         /** @var \Drupal\Core\Config\ImmutableConfig $domainOriginalData */
         $domainOriginalData = \Drupal::getContainer()->get('config.factory')->get($domainConfigName);
-        $this->data = array_merge_recursive($domainOriginalData->getRawData(), $this->data);
+        $this->data = $this->mergeArrays($domainOriginalData->getRawData(), $this->data);
 
         // Don't do anything when no changes are made. Prevent empty
         // domain.settings files.
@@ -95,10 +95,46 @@ class Config extends CoreConfig {
   }
 
   /**
+   * Helper function to merge the arrays.
+   *
+   * See first comment of the array_merge_recursive page.
+   *
+   * @source https://gist.github.com/ptz0n/1646171
+   *
+   * @return array|mixed
+   */
+  protected function mergeArrays() {
+    $arrays = func_get_args();
+    $base = array_shift($arrays);
+    if(!is_array($base)) $base = empty($base) ? array() : array($base);
+    foreach($arrays as $append) {
+      if(!is_array($append)) $append = array($append);
+      foreach($append as $key => $value) {
+        if(!array_key_exists($key, $base) and !is_numeric($key)) {
+          $base[$key] = $append[$key];
+          continue;
+        }
+        if(is_array($value) or is_array($base[$key])) {
+          $base[$key] = $this->mergeArrays($base[$key], $append[$key]);
+        }
+        else if(is_numeric($key))
+        {
+          if(!in_array($value, $base)) $base[] = $value;
+        }
+        else {
+          $base[$key] = $value;
+        }
+      }
+    }
+    return $base;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function delete() {
-    // Delete domain specific config. For example: Color module deletes config before recreating.
+    // Delete domain specific config. For example: Color module deletes config
+    // before recreating.
     // @todo Can this cause problems?
 
     $domainConfigName = $this->getDomainConfigName();
@@ -124,6 +160,15 @@ class Config extends CoreConfig {
 
     // Use default config name if domain hasn't been selected.
     if (empty($domain_id)) {
+      return $this->name;
+    }
+
+    // Using the devel-module it's possible to alter the domain specific config
+    // straight from the user interface. This will result in a domain config
+    // file of the domain config file.
+    // Example: domain.config.system.site.domain.config.system.site
+    // Prevent this by just returning the original config name.
+    if (preg_match('~^domain\.config\.~', $this->name)) {
       return $this->name;
     }
 
