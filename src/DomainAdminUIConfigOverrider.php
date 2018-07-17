@@ -7,6 +7,7 @@ use Drupal\domain\DomainNegotiatorInterface;
 use Drupal\domain_config\DomainConfigOverrider;
 use Drupal\domain\DomainInterface;
 use Drupal\Core\Language\LanguageInterface;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 /**
  * Extend DomainConfigOverrider to allow domain to be set.
@@ -64,9 +65,13 @@ class DomainAdminUIConfigOverrider extends DomainConfigOverrider {
 
     /** @var \Drupal\Core\Routing\Router $router */
     $router = \Drupal::service('router.no_access_checks');
-    $routeArray = $router->matchRequest(\Drupal::request());
-
-    $is_admin = \Drupal::service('router.admin_context')->isAdminRoute($routeArray['_route_object']);
+    try {
+      $routeArray = $router->matchRequest(\Drupal::request());
+      $is_admin = \Drupal::service('router.admin_context')->isAdminRoute($routeArray['_route_object']);
+    }
+    catch (ResourceNotFoundException $e) {
+      $is_admin = FALSE;
+    }
 
     if (!empty($this->domainNegotiator)
       && !$this->domainNegotiator->getSelectedDomainId()
