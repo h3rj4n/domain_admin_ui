@@ -66,15 +66,25 @@ class Config extends CoreConfig {
         // domain specific config.
         // @todo Add tests for this!
         // @todo Specific settings can be set to the origin (or parent) value. These settings should not be saved in the domain specific config file! (but removed)
+        // For now, when empty there is no difference between the original and the
+        // domain specific. So remove the config entirely. This works for one form
+        // per config file. There will be a problem when a config file is partly
+        // edited by multiple forms.
         // @todo Use dependency injection!
-        /** @var \Drupal\Core\Config\ImmutableConfig $domainOriginalData */
-        $domainOriginalData = \Drupal::getContainer()->get('config.factory')->get($domainConfigName);
-        $this->data = $this->mergeArrays($domainOriginalData->getRawData(), $this->data);
+        if (!empty($this->data)) {
+          /** @var \Drupal\Core\Config\ImmutableConfig $domainOriginalData */
+          $domainOriginalData = \Drupal::getContainer()->get('config.factory')->get($domainConfigName);
+          $this->data = $this->mergeArrays($domainOriginalData->getRawData(), $this->data);
+        }
 
         // Don't do anything when no changes are made. Prevent empty
         // domain.settings files.
         if (!empty($this->data)) {
           parent::save($has_trusted_data);
+        }
+        else {
+          // This config file should be removed, no changes compared to the orignal.
+          parent::delete();
         }
       }
     }
